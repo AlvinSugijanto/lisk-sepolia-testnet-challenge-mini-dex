@@ -28,13 +28,21 @@ export const SwapPanel = () => {
   });
 
   // Get token balances
-  const { data: balanceA } = useScaffoldContractRead({
+  const {
+    data: balanceA,
+    refetch: refetchBalanceA,
+    isLoading: isLoadingBalanceA,
+  } = useScaffoldContractRead({
     contractName: "MyToken",
     functionName: "balanceOf",
     args: [connectedAddress],
   });
 
-  const { data: balanceB } = useScaffoldContractRead({
+  const {
+    data: balanceB,
+    refetch: refetchBalanceB,
+    isLoading: isLoadingBalanceB,
+  } = useScaffoldContractRead({
     contractName: "SimpleUSDC",
     functionName: "balanceOf",
     args: [connectedAddress],
@@ -66,9 +74,9 @@ export const SwapPanel = () => {
 
   // Update approval status
   useEffect(() => {
-    console.log(allowanceA);
-    if (inputAmount && allowanceA && allowanceB) {
+    if (inputAmount && allowanceA !== undefined && allowanceB !== undefined) {
       const inputAmountBN = parseUnits(inputAmount, isTokenAInput ? 18 : 6);
+
       setIsApprovedA(allowanceA >= inputAmountBN);
       setIsApprovedB(allowanceB >= inputAmountBN);
     }
@@ -98,13 +106,13 @@ export const SwapPanel = () => {
   const { writeAsync: approveTokenA } = useScaffoldContractWrite({
     contractName: "MyToken",
     functionName: "approve",
-    args: [dexContract?.address, parseUnits("1000000", 18)], // Approve large amount
+    args: [dexContract?.address, parseUnits(inputAmount, 18)], // Approve large amount
   });
 
   const { writeAsync: approveTokenB } = useScaffoldContractWrite({
     contractName: "SimpleUSDC",
     functionName: "approve",
-    args: [dexContract?.address, parseUnits("1000000", 6)], // Approve large amount
+    args: [dexContract?.address, parseUnits(inputAmount, 6)], // Approve large amount
   });
 
   // Swap function
@@ -145,9 +153,12 @@ export const SwapPanel = () => {
       notification.success("Swap successful!");
       setInputAmount("");
       setOutputAmount("");
+      setTimeout(() => refetchBalanceA(), 2000);
+      setTimeout(() => refetchBalanceB(), 2000);
     } catch (error) {
       console.error("Swap failed:", error);
       notification.error("Swap failed");
+    } finally {
     }
   };
 
@@ -174,8 +185,18 @@ export const SwapPanel = () => {
           <label className="label">
             <span className="label-text">From</span>
             <span className="label-text-alt">
-              Balance: {formatBalance(isTokenAInput ? balanceA : balanceB, isTokenAInput ? 18 : 6)}{" "}
-              {isTokenAInput ? symbolA : symbolB}
+              Balance:{" "}
+              {(isTokenAInput && isLoadingBalanceA) || (!isTokenAInput && isLoadingBalanceB) ? (
+                <span className="inline-flex items-center gap-1">
+                  <div className="loading loading-spinner loading-xs"></div>
+                  Loading...
+                </span>
+              ) : (
+                <>
+                  {formatBalance(isTokenAInput ? balanceA : balanceB, isTokenAInput ? 18 : 6)}{" "}
+                  {isTokenAInput ? symbolA : symbolB}
+                </>
+              )}
             </span>
           </label>
           <div className="input-group">
@@ -231,7 +252,11 @@ export const SwapPanel = () => {
         {/* Action Button */}
         <div className="card-actions justify-end mt-4">
           {needsApproval ? (
-            <button className="btn btn-primary btn-block" onClick={handleApprove}>
+            <button
+              className="btn btn-primary btn-block"
+              onClick={handleApprove}
+              disabled={!inputAmount || parseFloat(inputAmount) <= 0}
+            >
               Approve {isTokenAInput ? symbolA : symbolB}
             </button>
           ) : (

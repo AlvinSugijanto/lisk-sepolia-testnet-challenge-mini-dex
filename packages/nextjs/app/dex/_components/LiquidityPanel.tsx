@@ -85,7 +85,6 @@ export const LiquidityPanel = () => {
   }, [amountA, amountB, allowanceA, allowanceB]);
 
   // Approve functions
-  // Ganti approve functions dengan dynamic amount
   const { writeAsync: approveTokenA } = useScaffoldContractWrite({
     contractName: "MyToken",
     functionName: "approve",
@@ -170,8 +169,26 @@ export const LiquidityPanel = () => {
   };
 
   const formatBalance = (balance: bigint | undefined, decimals: number) => {
-    if (!balance) return "0.0";
-    return parseFloat(formatUnits(balance, decimals)).toFixed(4);
+    if (!balance || balance === 0n) return "0.0";
+
+    try {
+      const formatted = formatUnits(balance, decimals);
+      const numberValue = parseFloat(formatted);
+
+      // Jika nilai 0, return "0.0"
+      if (numberValue === 0) return "0.0";
+
+      // Jika angka >= 1, tampilkan 4 decimals
+      if (numberValue >= 1) {
+        return numberValue.toFixed(4);
+      }
+
+      // Jika angka < 1, tampilkan semua decimals yang ada
+      return formatted;
+    } catch (error) {
+      console.error("Error formatting balance:", error);
+      return "0.0";
+    }
   };
 
   // Calculate expected output for removing liquidity
@@ -284,6 +301,7 @@ export const LiquidityPanel = () => {
             <div className="form-control">
               <label className="label">
                 <span className="label-text">LP Token Amount</span>
+                {/* PERBAIKAN: Gunakan formatLiquidity di sini juga */}
                 <span className="label-text-alt">Available: {formatBalance(userLiquidity, 18)}</span>
               </label>
               <input

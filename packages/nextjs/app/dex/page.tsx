@@ -33,13 +33,17 @@ const DEX: NextPage = () => {
       </div>
 
       {/* Tab Selector */}
+
       <div className="flex justify-center mb-6">
         <div className="tabs tabs-boxed">
-          <button className={`tab ${activeTab === "swap" ? "tab-active" : ""}`} onClick={() => setActiveTab("swap")}>
+          <button
+            className={`tab ${activeTab === "swap" ? "bg-base-100 primary-content" : ""}`}
+            onClick={() => setActiveTab("swap")}
+          >
             💱 Swap
           </button>
           <button
-            className={`tab ${activeTab === "liquidity" ? "tab-active" : ""}`}
+            className={`tab ${activeTab === "liquidity" ? "bg-base-100 primary-content" : ""}`}
             onClick={() => setActiveTab("liquidity")}
           >
             💧 Liquidity

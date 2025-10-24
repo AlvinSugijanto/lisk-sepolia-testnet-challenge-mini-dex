@@ -55,11 +55,6 @@ export const useScaffoldContractWrite = <
     args?: UseScaffoldWriteConfig<TContractName, TFunctionName>["args"];
     value?: UseScaffoldWriteConfig<TContractName, TFunctionName>["value"];
   } & UpdatedArgs = {}) => {
-    if (contractName === "SimpleDEX") {
-      console.log(args);
-      console.log(value);
-      console.log(otherConfig);
-    }
     if (!deployedContractData) {
       notification.error("Target Contract is not deployed, did you forget to run `yarn deploy`?");
       return;
