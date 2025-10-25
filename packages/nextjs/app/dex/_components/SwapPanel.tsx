@@ -199,6 +199,14 @@ export const SwapPanel = () => {
               )}
             </span>
           </label>
+          <div className="flex justify-end mb-2">
+            <button
+              className="btn btn-primary btn-xs px-3"
+              onClick={() => setInputAmount(formatBalance(isTokenAInput ? balanceA : balanceB, isTokenAInput ? 18 : 6))}
+            >
+              Max
+            </button>
+          </div>
           <div className="input-group">
             <input
               type="number"
